@@ -2,11 +2,15 @@ import java.util.*;
 
 class Solution {
     public List<List<Integer>> threeSum(int[] nums) {
-        Set<List<Integer>> resultSet = new HashSet<>();
-        Arrays.sort(nums);
+        List<List<Integer>> result = new ArrayList<>();
+        Arrays.sort(nums);  
         
         for (int i = 0; i < nums.length - 2; i++) {
+            
             if (i > 0 && nums[i] == nums[i - 1]) continue;
+            
+            
+            if (nums[i] > 0) break;
             
             int left = i + 1;
             int right = nums.length - 1;
@@ -15,7 +19,14 @@ class Solution {
                 int total = nums[i] + nums[left] + nums[right];
                 
                 if (total == 0) {
-                    resultSet.add(Arrays.asList(nums[i], nums[left], nums[right]));
+                    result.add(Arrays.asList(nums[i], nums[left], nums[right]));
+                    
+                    
+                    while (left < right && nums[left] == nums[left + 1]) left++;
+                    
+                    while (left < right && nums[right] == nums[right - 1]) right--;
+                    
+                    
                     left++;
                     right--;
                 } else if (total < 0) {
@@ -25,6 +36,6 @@ class Solution {
                 }
             }
         }
-        return new ArrayList<>(resultSet);
+        return result;
     }
 }
