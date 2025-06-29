@@ -1,76 +1,54 @@
-import com.eclipsesource.json.JsonArray;
-import com.eclipsesource.json.JsonValue;
-import java.util.PriorityQueue;
-import java.util.Comparator;
-
-class ListNode {
-    int val;
-    ListNode next;
-    ListNode() {}
-    ListNode(int val) { this.val = val; }
-    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-
-    // Converts a JSON array to a linked list
-    public static ListNode arrayToListNode(JsonArray jsonArray) {
-        if (jsonArray == null || jsonArray.size() == 0) {
-            return null;
-        }
-        ListNode dummy = new ListNode(-1);
-        ListNode current = dummy;
-        for (JsonValue value : jsonArray) {
-            current.next = new ListNode(value.asInt());
-            current = current.next;
-        }
-        return dummy.next;
-    }
-
-    // Converts a JSON array of arrays to an array of linked lists
-    public static ListNode[] arrayToListNodeArray(JsonArray jsonArrayOfArrays) {
-        if (jsonArrayOfArrays == null || jsonArrayOfArrays.size() == 0) {
-            return new ListNode[0];
-        }
-        ListNode[] lists = new ListNode[jsonArrayOfArrays.size()];
-        int index = 0;
-        for (JsonValue arrayValue : jsonArrayOfArrays) {
-            JsonArray innerArray = arrayValue.asArray();
-            lists[index++] = arrayToListNode(innerArray);
-        }
-        return lists;
-    }
-}
-
 class Solution {
     public ListNode mergeKLists(ListNode[] lists) {
         if (lists == null || lists.length == 0) {
             return null;
         }
         
-        PriorityQueue<ListNode> minHeap = new PriorityQueue<>(new Comparator<ListNode>() {
-            @Override
-            public int compare(ListNode a, ListNode b) {
-                return a.val - b.val;
-            }
-        });
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+        boolean hasNode = false;
         
         for (ListNode node : lists) {
-            if (node != null) {
-                minHeap.offer(node);
+            ListNode cur = node;
+            while (cur != null) {
+                hasNode = true;
+                int val = cur.val;
+                if (val < min) min = val;
+                if (val > max) max = val;
+                cur = cur.next;
             }
         }
         
-        ListNode dummy = new ListNode(-1);
-        ListNode current = dummy;
+        if (!hasNode) {
+            return null;
+        }
         
-        while (!minHeap.isEmpty()) {
-            ListNode smallest = minHeap.poll();
-            current.next = smallest;
-            current = current.next;
-            
-            if (smallest.next != null) {
-                minHeap.offer(smallest.next);
+        ListNode[] table = new ListNode[max - min + 1];
+        
+        for (int i = lists.length - 1; i >= 0; i--) {
+            ListNode node = lists[i];
+            ListNode temp;
+            while (node != null) {
+                temp = node.next;
+                int idx = node.val - min;
+                node.next = table[idx];
+                table[idx] = node;
+                node = temp;
             }
         }
         
-        return dummy.next;
+        ListNode ans = new ListNode();
+        ListNode p = ans;
+        for (ListNode head : table) {
+            if (head != null) {
+                p.next = head;
+                while (head.next != null) {
+                    head = head.next;
+                }
+                p = head;
+            }
+        }
+        
+        return ans.next;
     }
 }
